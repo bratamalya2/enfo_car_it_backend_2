@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // or mysql, sqlite
+  url      = env("DATABASE_URL")
+}
+
+model Agent {
+  id          Int       @id @default(autoincrement())
+  name        String
+  phone       String    @unique
+  checkedIn   Boolean   @default(false)
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+  warehouseId Int
+  orders      Order[]
+  totalKm     Float     @default(0)
+  totalTime   Int       @default(0) // in minutes
+  createdAt   DateTime  @default(now())
+}
+
+model Warehouse {
+  id     Int     @id @default(autoincrement())
+  name   String
+  city   String
+  agents Agent[]
+  orders Order[]
+}
+
+model Order {
+  id           Int       @id @default(autoincrement())
+  address      String
+  latitude     Float
+  longitude    Float
+  assigned     Boolean   @default(false)
+  deliveryDate DateTime
+  warehouse    Warehouse @relation(fields: [warehouseId], references: [id])
+  warehouseId  Int
+  agent        Agent?    @relation(fields: [agentId], references: [id])
+  agentId      Int?
+  distanceKm   Float     @default(0) // Estimated distance to destination
+  durationMin  Int       @default(0) // Estimated time to deliver in minutes
+  createdAt    DateTime  @default(now())
+}
